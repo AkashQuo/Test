@@ -1,0 +1,80 @@
+# producer - Consumer
+# ingestion transformation- Storage- Quality Checks- Automated Workflow
+
+from urllib.parse import parse_qs
+from zipfile import ZipFile
+
+import pandas as pd
+
+class Producer:
+    def __init__(self, events_folder):
+        self.events_folder = events_folder
+        self.file_list=None
+
+    def list_files_in_zip(self, zip_file_path):
+        with ZipFile(zip_file_path, 'r') as zip_ref:
+            file_list = zip_ref.namelist()
+        return file_list
+
+    def read_events(self):
+      zip_file_path = self.events_folder
+      self.file_list = self.list_files_in_zip(zip_file_path)
+      return self.file_list
+
+class Workflow:
+    def __init__(self, workflow_name):
+        self.workflow_name = workflow_name 
+
+    def trigger_worflow(self, transformed_data):
+        # Trigger worflow with workflow_name as self.workflow_name
+        pass
+
+class DataQualityChecker:
+    def __init__(self, transformed_data):
+        self.transformed_data = transformed_data
+
+    def check_data_quality(self):
+        self.transformed_data=self.transformed_data.fillna()
+        return self.transformed_data
+
+class DataTransformer:
+    def __init__(self, events_data):
+        self.events_data = events_data
+
+    def transform_data(self):
+        for file_name in self.event_data:
+          read_df = pd.read_csv(file_name)
+          dqc=DataQualityChecker(read_df)
+          new_df=dqc.check_data_quality()
+          for group_name, grouped_df in new_df.groupby(by="event_name"):
+            workflow_obj=self.Worflow(group_name)
+            workflow_obj.trigger_worflow(grouped_df)
+          new_df.to_csv(file_name)
+
+class Database:
+    def __init__(self, db_name):
+        self.db_name = db_name
+
+    def store_data(self, transformed_data):
+        pass
+
+class Consumer:
+    def __init__(self, event_store,file_list):
+        self.event_store = event_store
+        self.file_list = file_list 
+
+    def consume_messages(self):
+        # trigger Message Queue
+        # Emails on report generated or IVR calls schedules 
+        pass
+
+
+file_path = "EventsData-20230908T105210Z-001.zip"
+event_name = file_path.split(".")[0]
+producer = Producer(events_folder=file_path)
+file_list = producer.read_events()
+transformer = DataTransformer(events_data=file_list)
+transformed_data = transformer.transform_data()
+db = Database(db_name="my_database")
+db.store_data(transformed_data)
+consumer_msg = Consumer(event_name, file_list)
